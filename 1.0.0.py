@@ -81,9 +81,6 @@ plt.ylabel('Amplitude dB/Sample')
 plt.xlabel('Frequency rad/sample')
 plt.title('Frequency Response/rectify_data_unfiltered')
 
-
-
-
 """Graph The Frequency Response
 The plotting for the frequency response, showing the critical points of the w,h 
 using the variables a and b from matlab file import."""
