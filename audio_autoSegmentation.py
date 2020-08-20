@@ -93,6 +93,10 @@ for x in os.walk(path_load):
                 signal = audio_signal[start_end_idxs[poi][0]:start_end_idxs[poi][1]]
                 pois.append(signal)
             
+        # Save total number of POIs found to .txt file
+        f = open("totalPOIs.txt","w+")
+        f.write("{} total POIs found in bird {} session {}".format(len(pois), bird, session))
+        f.close()
         print('Found {} POIs in session {}'.format(len(pois), session))
             
         ## SAVE SOME SAMPLE POIs
