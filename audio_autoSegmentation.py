@@ -1,4 +1,4 @@
-
+#!/home/pablotostado/anaconda3/envs/birdsong/bin/python
 
 '''IMPORTS'''
 
@@ -24,34 +24,39 @@ from audio_autoSegmentation_helper import *
 
 
 '''DATA PATHS'''
-# path_load = '/net/expData/speech_bci/raw_data/z_r20y12_20/2020-08-10/'
+# path_load = '/net/expData/speech_bci/raw_data/z_g13r9_20/2020-08-16/'
+# path_load = '/net/expData/speech_bci/raw_data/z_r20y12_20/2020-08-16/'
 path_load = '/net/expData/speech_bci/raw_data/'
 path_save = '/net/expData/speech_bci/processed_data/audio_habituation/'
 
-'''VARIABLES'''
+'''VARIABLES set by user'''
 th = 8  # Amplitude Detection Threshold -> # of standard devioations above rms for song detection
+POIs2save = 200  # Number of sample POIs found to be saved (.wav sample, wave & spectrogram plots)
+samples_between_poi = 2*sr  # Number of samples needed to consider two POIs independent.
+min_samples_poi = sr/2  # Only save POI if it's at least 0.5 seconds long (discard random noisy threshold crossings)
     
 '''FILTER'''
-# # b, a = load_filter_coefficients_matlab('/home/jovyan/pablo_tostado/bird_song/filters/butter_hp_250hz_order4.mat')
-# b, a = load_filter_coefficients_matlab('/home/jovyan/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4.mat')
-b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4.mat')
+b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
     
     
     
 '''CODE'''
+
+if not os.path.isdir(path_load): print('Data path does not exist.')
     
 for x in os.walk(path_load):
     os.chdir(x[0])
     audio_files = glob('*.wav') # Retrieve all .wav files in folder
+    
+    # Get Bird & Session names to store results
+    path = os.path.normpath(x[0])
+    path_folders = path.split(os.sep)
+    bird = path_folders[-2]
+    session = path_folders[-1]
+    
+    print('Segmenting audio from bird:', bird, ', session:', session)
 
-    if audio_files:
-
-        # Get Bird & Session names to store results
-        path = os.path.normpath(x[0])
-        path_folders = path.split(os.sep)
-        bird = path_folders[-2]
-        session = path_folders[-1]
-        print('Segmenting audio from bird:', bird, ', session:', session)
+    if audio_files and not os.path.isdir(path_save + bird + '/' + session + '/'):  # If session has recorded files and has already not been analyzed.
 
         # Create folder where to store data if it does not exist already and change directory.
         Path(path_save + bird + '/' + session + '/').mkdir(parents=True, exist_ok=True)
@@ -59,7 +64,7 @@ for x in os.walk(path_load):
 
         # RETRIEVE ALL POIs FROM ALL AUDIO FILES
            
-        pois = []   # Store all POIs
+        pois = []   # Store all found POIs
         for af in audio_files:
             
             print('Loading file: ', af)
@@ -82,8 +87,6 @@ for x in os.walk(path_load):
             binary_signal[idx_above_th] = 1
 
             # Retrieve start / end sample index for each Period of Interest found.
-            samples_between_poi = 2*sr  # Number of samples needed to consider two POIs independent.
-            min_samples_poi = sr/2  # Only save POI if it's at least 0.5 seconds long (discard random noisy threshold crossings)
             start_end_idxs = find_start_end_idxs_POIs(binary_signal, samples_between_poi, min_samples_poi=min_samples_poi)
 
             for poi in range(len(start_end_idxs)):
@@ -98,8 +101,8 @@ for x in os.walk(path_load):
         pdf_wave = PdfPages('POIs_pressureWave_' + str(bird) + '_' + str(session) + '.pdf')
         pdf_spectrogram = PdfPages('POIs_spectrogram_' + str(bird) + '_' + str(session) + '.pdf')
         
-        # Plot snippets of 100 POIs (if sufficient found) and save them:
-        numPois2plot = np.min((300, len(pois)))
+        # Plot snippets of X POIs (if sufficient found) and save them:
+        numPois2plot = np.min((POIs2save, len(pois)))
         ex2plot = random.sample(range(len(pois)), numPois2plot)  # generate 100 random integer values without duplicates
         for poi in range(len(ex2plot)):
             signal = pois[ex2plot[poi]]
@@ -128,6 +131,9 @@ for x in os.walk(path_load):
             # Save .wav file of snippet
             sf.write(str(session) + '_' +'POI' + str(poi) + '.wav', signal, sr)
 
-
+        
+        print('Saved figures to PDF')
         pdf_wave.close()
         pdf_spectrogram.close()
+        
+    else: print('Bird {} session {} is empty or has already been segmented'.format(bird, session))
