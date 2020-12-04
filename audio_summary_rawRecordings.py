@@ -39,6 +39,8 @@ for x in os.walk(path_load):
     os.chdir(x[0])
     audio_files = glob('*.wav') # Retrieve all .wav files in folder
     
+    print('{} ')
+    
     f.write(x[0] + ": " + str(len(audio_files)) + ".wav files")
     if len(audio_files) < 24: f.write( "   Warning!")
     f.write("\n")

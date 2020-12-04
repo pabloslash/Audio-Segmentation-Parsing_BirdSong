@@ -1,6 +1,6 @@
-#!/home/pablotostado/anaconda3/envs/birdsong/bin/python
+###!/home/pablotostado/anaconda3/envs/birdsong/bin/python
 
-'''IMPORTS'''
+"""IMPORTS"""
 
 import numpy  as np    
 from glob import glob  
@@ -22,22 +22,21 @@ import random
 from audio_autoSegmentation_helper import *
 
 
-
-'''DATA PATHS'''
+"""DATA PATHS"""
 # path_load = '/net/expData/speech_bci/raw_data/z_g13r9_20/2020-08-16/'
-# path_load = '/net/expData/speech_bci/raw_data/z_r20y12_20/2020-08-16/'
-path_load = '/net/expData/speech_bci/raw_data/'
-path_save = '/net/expData/speech_bci/processed_data/audio_habituation/'
+# path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
+path_load = '/net3/expData/speech_bci/raw_data/'
+path_save = '/net3/expData/speech_bci/processed_data/audio_habituation/'
+# path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
 
 '''VARIABLES set by user'''
 th = 8  # Amplitude Detection Threshold -> # of standard devioations above rms for song detection
 POIs2save = 200  # Number of sample POIs found to be saved (.wav sample, wave & spectrogram plots)
-samples_between_poi = 2*sr  # Number of samples needed to consider two POIs independent.
-min_samples_poi = sr/2  # Only save POI if it's at least 0.5 seconds long (discard random noisy threshold crossings)
+time_between_poi = 2  # Number of seconds needed to consider two POIs independent.
+min_poi_time = 0.5  # Only save POI if it's at least min_poi seconds long (discard random noisy threshold crossings)
     
 '''FILTER'''
 b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
-    
     
     
 '''CODE'''
@@ -65,6 +64,7 @@ for x in os.walk(path_load):
         # RETRIEVE ALL POIs FROM ALL AUDIO FILES
            
         pois = []   # Store all found POIs
+        audio_filename = [] # Save the file they belong to, to have an idea of the time at which song occurs
         for af in audio_files:
             
             print('Loading file: ', af)
@@ -87,11 +87,12 @@ for x in os.walk(path_load):
             binary_signal[idx_above_th] = 1
 
             # Retrieve start / end sample index for each Period of Interest found.
-            start_end_idxs = find_start_end_idxs_POIs(binary_signal, samples_between_poi, min_samples_poi=min_samples_poi)
+            start_end_idxs = find_start_end_idxs_POIs(binary_signal, time_between_poi*sr, min_samples_poi=min_poi_time*sr)
 
             for poi in range(len(start_end_idxs)):
                 signal = audio_signal[start_end_idxs[poi][0]:start_end_idxs[poi][1]]
                 pois.append(signal)
+                audio_filename.append(af)
             
         # Save total number of POIs found to .txt file
         f = open("totalPOIs.txt","w+")
@@ -116,7 +117,7 @@ for x in os.walk(path_load):
             plt.plot(np.linspace(0,len(signal)/sr,len(signal)), signal)
             plt.ylabel('Amplitude')
             plt.xlabel('Time (s)')
-            plt.title('POI {} in session {}'.format(poi, session))
+            plt.title('POI {} in session {}, found in file #{}'.format(poi, session, audio_filename[ex2plot[poi]]))
             # When no figure is specified the current figure is saved
             pdf_wave.savefig()
             plt.close()
@@ -127,7 +128,7 @@ for x in os.walk(path_load):
             plt.axis(ymin=0, ymax=10000)
             plt.xlabel('Time')
             plt.ylabel('Frequency')
-            plt.title('POI {} in session {}'.format(poi, session))
+            plt.title('POI {} in session {}, found in file #{}'.format(poi, session, audio_filename[ex2plot[poi]]))
             # When no figure is specified the current figure is saved
             pdf_spectrogram.savefig()
             plt.close()
