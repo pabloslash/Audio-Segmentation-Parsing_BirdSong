@@ -34,7 +34,7 @@ def find_start_end_idxs_POIs(binary_signal, samples_between_poi, min_samples_poi
     """"
     Returns a list of tuples (start_idx, end_idx) for each period of interest found in the audio file.
     
-     Input: Binary vector where 1s indicate samples that are above a specified audio threshold.
+     Input: Binary vector where ones indicate samples that are above a specified audio threshold, zeros indicate samples below the threshold.
      samples_between_poi = Number of samples needed to consider two POIs independent.
      min_samples_poi = Minimum number of samples that a POI must have to not be discarded.
 
@@ -50,6 +50,7 @@ def find_start_end_idxs_POIs(binary_signal, samples_between_poi, min_samples_poi
         if binary_signal[i] == 1:
             if start_idx == None:
                 start_idx = i
+#                 print(start_idx)
 
             elif zero_counter != 0 or end_idx is not None:
                 zero_counter = 0

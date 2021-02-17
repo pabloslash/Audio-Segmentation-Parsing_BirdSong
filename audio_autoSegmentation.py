@@ -1,4 +1,4 @@
-###!/home/pablotostado/anaconda3/envs/birdsong/bin/python
+#!/home/pablotostado/anaconda3/envs/birdsong/bin/python
 
 """IMPORTS"""
 
@@ -25,8 +25,8 @@ from audio_autoSegmentation_helper import *
 """DATA PATHS"""
 # path_load = '/net/expData/speech_bci/raw_data/z_g13r9_20/2020-08-16/'
 # path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
-path_load = '/net3/expData/speech_bci/raw_data/'
-path_save = '/net3/expData/speech_bci/processed_data/audio_habituation/'
+path_load = '/net2/expData/speech_bci/raw_data/'
+path_save = '/net2/expData/speech_bci/processed_data/audio_habituation/'
 # path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
 
 '''VARIABLES set by user'''
@@ -108,7 +108,7 @@ for x in os.walk(path_load):
         
         # Plot snippets of X POIs (if sufficient found) and save them:
         numPois2plot = np.min((POIs2save, len(pois)))
-        ex2plot = random.sample(range(len(pois)), numPois2plot)  # generate 100 random integer values without duplicates
+        ex2plot = random.sample(range(len(pois)), numPois2plot)  # generate 200 random integer values without duplicates
         for poi in range(len(ex2plot)):
             signal = pois[ex2plot[poi]]
             
