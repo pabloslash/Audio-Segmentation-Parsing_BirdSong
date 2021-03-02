@@ -40,7 +40,6 @@ b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_so
     
     
 '''CODE'''
-
 if not os.path.isdir(path_load): print('Data path does not exist.')
     
 for x in os.walk(path_load):
@@ -62,7 +61,7 @@ for x in os.walk(path_load):
         os.chdir(path_save + bird + '/' + session + '/')
 
         # RETRIEVE ALL POIs FROM ALL AUDIO FILES
-           
+        
         pois = []   # Store all found POIs
         audio_filename = [] # Save the file they belong to, to have an idea of the time at which song occurs
         for af in audio_files:
