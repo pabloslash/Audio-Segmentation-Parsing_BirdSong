@@ -1,4 +1,4 @@
-#!/home/pablotostado/anaconda3/envs/birdsong/bin/python
+#!/home/finch/anaconda3/bin/python
 
 """IMPORTS"""
 
@@ -25,8 +25,10 @@ from audio_autoSegmentation_helper import *
 """DATA PATHS"""
 # path_load = '/net/expData/speech_bci/raw_data/z_g13r9_20/2020-08-16/'
 # path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
-path_load = '/net2/expData/speech_bci/raw_data/'
-path_save = '/net2/expData/speech_bci/processed_data/audio_habituation/'
+#path_load = '/net2/expData/speech_bci/raw_data/'
+path_load = '/mnt/sphere/speech_bci/raw_data/'
+path_save = '/mnt/sphere/speech_bci/derived_data/'
+#path_save = '/net2/expData/speech_bci/processed_data/audio_habituation/'
 # path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
 
 '''VARIABLES set by user'''
@@ -36,8 +38,8 @@ time_between_poi = 2  # Number of seconds needed to consider two POIs independen
 min_poi_time = 0.5  # Only save POI if it's at least min_poi seconds long (discard random noisy threshold crossings)
     
 '''FILTER'''
-b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
-    
+#b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
+b, a = load_filter_coefficients_matlab('/home/finch/scripts/Audio-Segmentation-Parsing_BirdSong/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
     
 '''CODE'''
 if not os.path.isdir(path_load): print('Data path does not exist.')
@@ -49,16 +51,16 @@ for x in os.walk(path_load):
     # Get Bird & Session names to store results
     path = os.path.normpath(x[0])
     path_folders = path.split(os.sep)
-    bird = path_folders[-2]
-    session = path_folders[-1]
+    bird = path_folders[-3]
+    session = path_folders[-2]
     
     print('Segmenting audio from bird:', bird, ', session:', session)
 
-    if audio_files and not os.path.isdir(path_save + bird + '/' + session + '/'):  # If session has recorded files and has already not been analyzed.
+    if audio_files and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded files and has already not been analyzed.
 
         # Create folder where to store data if it does not exist already and change directory.
-        Path(path_save + bird + '/' + session + '/').mkdir(parents=True, exist_ok=True)
-        os.chdir(path_save + bird + '/' + session + '/')
+        Path(path_save + bird + '/' + session + '/bout_detection_threshold/').mkdir(parents=True, exist_ok=True)
+        os.chdir(path_save + bird + '/' + session + '/bout_detection_threshold/')
 
         # RETRIEVE ALL POIs FROM ALL AUDIO FILES
         
