@@ -45,6 +45,7 @@ b, a = load_filter_coefficients_matlab('/home/finch/scripts/Audio-Segmentation-P
 if not os.path.isdir(path_load): print('Data path does not exist.')
     
 for x in os.walk(path_load):
+
     os.chdir(x[0])
     audio_files = glob('*.wav') # Retrieve all .wav files in folder
     
