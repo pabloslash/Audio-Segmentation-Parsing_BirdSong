@@ -1,4 +1,4 @@
-#!/home/pablotostado/anaconda3/envs/birdsong/bin/python
+#!/home/finch/anaconda3/bin/python
 
 """IMPORTS"""
 
@@ -23,10 +23,10 @@ from audio_autoSegmentation_helper import *
 
 
 """DATA PATHS"""
-# path_load = '/net/expData/speech_bci/raw_data/z_g13r9_20/2020-08-16/'
+# path_load = '/mnt/sphere/speech_bci/raw_data/z_k17k18_21/2021-05-26/'
 # path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
-path_load = '/net2/expData/speech_bci/raw_data/'
-path_save = '/net2/expData/speech_bci/processed_data/audio_habituation/'
+path_load = '/mnt/sphere/speech_bci/raw_data/'
+path_save = '/mnt/sphere/speech_bci/derived_data/'
 # path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
 
 '''VARIABLES set by user'''
@@ -36,7 +36,7 @@ time_between_poi = 2  # Number of seconds needed to consider two POIs independen
 min_poi_time = 0.5  # Only save POI if it's at least min_poi seconds long (discard random noisy threshold crossings)
     
 '''FILTER'''
-b, a = load_filter_coefficients_matlab('/home/pablotostado/pablo_tostado/bird_song/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
+b, a = load_filter_coefficients_matlab('/home/finch/scripts/Audio-Segmentation-Parsing_BirdSong/filters/butter_bp_250hz-8000hz_order4_sr48000.mat')
     
     
 '''CODE'''
