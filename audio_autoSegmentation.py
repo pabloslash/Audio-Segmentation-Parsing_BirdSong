@@ -52,16 +52,20 @@ for x in os.walk(path_load):
         # Get Bird & Session names to store results
         path = os.path.normpath(x[0])
         path_folders = path.split(os.sep)
-        bird = path_folders[-2]
-        session = path_folders[-1]
 
-        print('Segmenting audio from bird:', bird, ', session:', session)
+        bird = path_folders[-3]
+        session = path_folders[-2]
+        alsa_folder = path_folders[-1]
 
-        if audio_files and not os.path.isdir(path_save + bird + '/' + session + '/'):  # If session has recorded files and has already not been analyzed.
+        print('Searching directory: ', path)
+
+        if alsa_folder=='alsa' and audio_files and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded .wav files and has not already been analyzed.
+
+            print('Segmenting audion from bird:', bird, ', session:', session)
 
             # Create folder where to store data if it does not exist already and change directory.
-            Path(path_save + bird + '/' + session + '/').mkdir(parents=True, exist_ok=True)
-            os.chdir(path_save + bird + '/' + session + '/')
+            Path(path_save + bird + '/' + session + '/bout_detection_threshold/').mkdir(parents=True, exist_ok=True)
+            os.chdir(path_save + bird + '/' + session + '/bout_detection_threshold/')
 
             # RETRIEVE ALL POIs FROM ALL AUDIO FILES
 
