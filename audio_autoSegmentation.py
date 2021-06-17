@@ -23,8 +23,8 @@ from audio_autoSegmentation_helper import *
 
 
 """DATA PATHS"""
-# path_load = '/mnt/sphere/speech_bci/raw_data/z_k17k18_21/2021-05-26/'
-# path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
+#path_load = '/mnt/sphere/speech_bci/raw_data/s_k4o6_21/'
+#path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
 path_load = '/mnt/sphere/speech_bci/raw_data/'
 path_save = '/mnt/sphere/speech_bci/derived_data/'
 # path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
@@ -47,7 +47,7 @@ for x in os.walk(path_load):
     try:
     
         os.chdir(x[0])
-        audio_files = glob('*.wav') # Retrieve all .wav files in folder
+        audio_files = np.sort(glob('*.wav')) # Retrieve all .wav files in folder, ordered alphabetically
 
         # Get Bird & Session names to store results
         path = os.path.normpath(x[0])
@@ -59,7 +59,9 @@ for x in os.walk(path_load):
 
         print('Searching directory: ', path)
 
-        if alsa_folder=='alsa' and audio_files and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded .wav files and has not already been analyzed.
+        if alsa_folder=='alsa' and audio_files.size != 0 and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded .wav files and has not already been analyzed.
+
+            print('TEST')
 
             print('Segmenting audion from bird:', bird, ', session:', session)
 
@@ -109,12 +111,12 @@ for x in os.walk(path_load):
             ## SAVE SOME SAMPLE POIs
 
             # Create pdf to save snippets of POIs found (waveforms & spectrograms).
-            pdf_wave = PdfPages('POIs_pressureWave_' + str(bird) + '_' + str(session) + '.pdf')
-            pdf_spectrogram = PdfPages('POIs_spectrogram_' + str(bird) + '_' + str(session) + '.pdf')
+            pdf_wave = PdfPages('POIs_pressureWave_' + str(bird) + '_' + str(session) + '_' + str(len(pois)) + 'POIs.pdf')
+            pdf_spectrogram = PdfPages('POIs_spectrogram_' + str(bird) + '_' + str(session) + '_' + str(len(pois)) + 'POIs.pdf')
 
             # Plot snippets of X POIs (if sufficient found) and save them:
             numPois2plot = np.min((POIs2save, len(pois)))
-            ex2plot = random.sample(range(len(pois)), numPois2plot)  # generate 200 random integer values without duplicates
+            ex2plot = np.sort(random.sample(range(len(pois)), numPois2plot))  # generate 200 random integer values without duplicates, sorted so that they are saved in order of occurrence during the day
             for poi in range(len(ex2plot)):
                 signal = pois[ex2plot[poi]]
 
