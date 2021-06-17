@@ -74,33 +74,36 @@ for x in os.walk(path_load):
             pois = []   # Store all found POIs
             audio_filename = [] # Save the file they belong to, to have an idea of the time at which song occurs
             for af in audio_files:
+                
+                # If .wav file is not empty (sometimes the recording/saving goes wrong)
+                if os.path.getsize(af) != 0:
+                
+                    print('Loading file: ', af)
 
-                print('Loading file: ', af)
+                    # To preserve the native sampling rate of the file, use sr=None
+                    audio_signal, sr = lr.load(x[0] + '/' + af, sr=None)  
 
-                # To preserve the native sampling rate of the file, use sr=None
-                audio_signal, sr = lr.load(x[0] + '/' + af, sr=None)  
+                    # Filter audio
+                    filt_audio_signal = noncausal_filter(audio_signal, b, a=a)
 
-                # Filter audio
-                filt_audio_signal = noncausal_filter(audio_signal, b, a=a)
+                    # Rectify audio signal
+                    rf_filt_audio_signal = np.absolute(filt_audio_signal)
 
-                # Rectify audio signal
-                rf_filt_audio_signal = np.absolute(filt_audio_signal)
+                    # Calculate RMS of audio signal
+                    rms = calculate_signal_rms(rf_filt_audio_signal)
+    
+                    # Create binary vector of indexes where the audio crosses the specified threshold
+                    idx_above_th = np.argwhere(rf_filt_audio_signal > th*rms)
+                    binary_signal = np.zeros(len(rf_filt_audio_signal))
+                    binary_signal[idx_above_th] = 1
 
-                # Calculate RMS of audio signal
-                rms = calculate_signal_rms(rf_filt_audio_signal)
+                    # Retrieve start / end sample index for each Period of Interest found.
+                    start_end_idxs = find_start_end_idxs_POIs(binary_signal, time_between_poi*sr, min_samples_poi=min_poi_time*sr)
 
-                # Create binary vector of indexes where the audio crosses the specified threshold
-                idx_above_th = np.argwhere(rf_filt_audio_signal > th*rms)
-                binary_signal = np.zeros(len(rf_filt_audio_signal))
-                binary_signal[idx_above_th] = 1
-
-                # Retrieve start / end sample index for each Period of Interest found.
-                start_end_idxs = find_start_end_idxs_POIs(binary_signal, time_between_poi*sr, min_samples_poi=min_poi_time*sr)
-
-                for poi in range(len(start_end_idxs)):
-                    signal = audio_signal[start_end_idxs[poi][0]:start_end_idxs[poi][1]]
-                    pois.append(signal)
-                    audio_filename.append(af)
+                    for poi in range(len(start_end_idxs)):
+                        signal = audio_signal[start_end_idxs[poi][0]:start_end_idxs[poi][1]]
+                        pois.append(signal)
+                        audio_filename.append(af)
 
             # Save total number of POIs found to .txt file
             f = open("totalPOIs.txt","w+")
