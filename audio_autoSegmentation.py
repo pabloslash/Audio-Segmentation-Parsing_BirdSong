@@ -23,11 +23,9 @@ from audio_autoSegmentation_helper import *
 
 
 """DATA PATHS"""
-#path_load = '/mnt/sphere/speech_bci/raw_data/s_k4o6_21/'
-#path_load = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/test2/'
-path_load = '/mnt/sphere/speech_bci/raw_data/'
+path_load = '/mnt/sphere/speech_bci/raw_data/z_k9y10_21/'
+#path_load = '/mnt/sphere/speech_bci/raw_data/'
 path_save = '/mnt/sphere/speech_bci/derived_data/'
-# path_save = '/net/expData/speech_bci/processed_data/audio_habituation/test_b1431/'
 
 '''VARIABLES set by user'''
 th = 8  # Amplitude Detection Threshold -> # of standard devioations above rms for song detection
@@ -76,12 +74,14 @@ for x in os.walk(path_load):
             for af in audio_files:
                 
                 # If .wav file is not empty (sometimes the recording/saving goes wrong)
-                if os.path.getsize(af) != 0:
+                if os.path.getsize(x[0] + '/' + af) != 0:
                 
                     print('Loading file: ', af)
 
                     # To preserve the native sampling rate of the file, use sr=None
-                    audio_signal, sr = lr.load(x[0] + '/' + af, sr=None)  
+                    # To load all channels (avoid averaging them), use mono=False and take the desired one [0]
+                    audio_signal, sr = lr.load(x[0] + '/' + af, sr=None, mono=False)  
+                    audio_signal = audio_signal[0] 
 
                     # Filter audio
                     filt_audio_signal = noncausal_filter(audio_signal, b, a=a)
