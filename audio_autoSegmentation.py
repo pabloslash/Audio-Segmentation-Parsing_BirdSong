@@ -13,6 +13,7 @@ import soundfile as sf
 import os
 from pathlib import Path
 from scipy import signal
+from scipy.io import wavfile # added by zk to read just the one channel of the file
 import math 
 from scipy.signal import filtfilt
 import numpy as np 
@@ -23,8 +24,8 @@ from audio_autoSegmentation_helper import *
 
 
 """DATA PATHS"""
-path_load = '/mnt/sphere/speech_bci/raw_data/z_k9y10_21/'
-#path_load = '/mnt/sphere/speech_bci/raw_data/'
+#path_load = '/mnt/sphere/speech_bci/raw_data/z_y19o20_21/2021-09-07/'
+path_load = '/mnt/sphere/speech_bci/raw_data/'
 path_save = '/mnt/sphere/speech_bci/derived_data/'
 
 '''VARIABLES set by user'''
@@ -38,7 +39,7 @@ b, a = load_filter_coefficients_matlab('/home/finch/scripts/Audio-Segmentation-P
     
     
 '''CODE'''
-if not os.path.isdir(path_load): print('Data path does not exist.')
+#if not os.path.isdir(path_load): print('Data path does not exist.')
     
 for x in os.walk(path_load):
     
@@ -59,8 +60,6 @@ for x in os.walk(path_load):
 
         if alsa_folder=='alsa' and audio_files.size != 0 and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded .wav files and has not already been analyzed.
 
-            print('TEST')
-
             print('Segmenting audion from bird:', bird, ', session:', session)
 
             # Create folder where to store data if it does not exist already and change directory.
@@ -71,7 +70,7 @@ for x in os.walk(path_load):
 
             pois = []   # Store all found POIs
             audio_filename = [] # Save the file they belong to, to have an idea of the time at which song occurs
-            for af in audio_files:
+            for af in audio_files[:]:
                 
                 # If .wav file is not empty (sometimes the recording/saving goes wrong)
                 if os.path.getsize(x[0] + '/' + af) != 0:
@@ -80,8 +79,8 @@ for x in os.walk(path_load):
 
                     # To preserve the native sampling rate of the file, use sr=None
                     # To load all channels (avoid averaging them), use mono=False and take the desired one [0]
-                    audio_signal, sr = lr.load(x[0] + '/' + af, sr=None, mono=False)  
-                    audio_signal = audio_signal[0] 
+                    sr, audio_signal = wavfile.read(x[0] + '/' + af, mmap=False)  
+                    audio_signal = audio_signal[:, 0] # get the first channel 
 
                     # Filter audio
                     filt_audio_signal = noncausal_filter(audio_signal, b, a=a)
