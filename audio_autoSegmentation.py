@@ -19,12 +19,13 @@ from scipy.signal import filtfilt
 import numpy as np 
 from matplotlib.backends.backend_pdf import PdfPages  # Deal with PDFs
 import random
+import shutil
 
 from audio_autoSegmentation_helper import *
 
 
 """DATA PATHS"""
-#path_load = '/mnt/sphere/speech_bci/raw_data/z_y19o20_21/2021-09-07/'
+#path_load = '/mnt/sphere/speech_bci/raw_data/z_b9m16_21/2021-12-08/'
 path_load = '/mnt/sphere/speech_bci/raw_data/'
 path_save = '/mnt/sphere/speech_bci/derived_data/'
 
@@ -57,13 +58,25 @@ for x in os.walk(path_load):
         alsa_folder = path_folders[-1]
 
         print('Searching directory: ', path)
+        # if the bird is starling, announce it and raise value error to get to the next part of the loop
+        # it technically is a value error, since it is a wrong bird
+
+        if bird.split('_') == 's':
+            print('Bird is starling, will just skip it')
+            raise ValueError
 
         if alsa_folder=='alsa' and audio_files.size != 0 and not os.path.isdir(path_save + bird + '/' + session + '/bout_detection_threshold/'):  # If session has recorded .wav files and has not already been analyzed.
 
             print('Segmenting audion from bird:', bird, ', session:', session)
 
             # Create folder where to store data if it does not exist already and change directory.
-            Path(path_save + bird + '/' + session + '/bout_detection_threshold/').mkdir(parents=True, exist_ok=True)
+            # since we are using os.path anyway...
+            dir_save = os.path.join(path_save, bird, session, 'bout_detection_threshold')
+            os.makedirs(dir_save, exist_ok=True, mode=0o777)
+            print('saving to {}'.format(dir_save))
+
+            #Path(path_save + bird + '/' + session + '/bout_detection_threshold/').mkdir(parents=True, exist_ok=True, mode=0o775)
+
             os.chdir(path_save + bird + '/' + session + '/bout_detection_threshold/')
 
             # RETRIEVE ALL POIs FROM ALL AUDIO FILES
@@ -119,6 +132,7 @@ for x in os.walk(path_load):
             # Plot snippets of X POIs (if sufficient found) and save them:
             numPois2plot = np.min((POIs2save, len(pois)))
             ex2plot = np.sort(random.sample(range(len(pois)), numPois2plot))  # generate 200 random integer values without duplicates, sorted so that they are saved in order of occurrence during the day
+
             for poi in range(len(ex2plot)):
                 signal = pois[ex2plot[poi]]
 
@@ -127,7 +141,7 @@ for x in os.walk(path_load):
                 plt.plot(np.linspace(0,len(signal)/sr,len(signal)), signal)
                 plt.ylabel('Amplitude')
                 plt.xlabel('Time (s)')
-                plt.title('POI {} in session {}, found in file #{}'.format(poi, session, audio_filename[ex2plot[poi]]))
+                plt.title('POI {} in session {}, found in file #{}'.format(ex2plot[poi], session, audio_filename[ex2plot[poi]]))
                 # When no figure is specified the current figure is saved
                 pdf_wave.savefig()
                 plt.close()
@@ -138,21 +152,30 @@ for x in os.walk(path_load):
                 plt.axis(ymin=0, ymax=10000)
                 plt.xlabel('Time')
                 plt.ylabel('Frequency')
-                plt.title('POI {} in session {}, found in file #{}'.format(poi, session, audio_filename[ex2plot[poi]]))
+                plt.title('POI {} in session {}, found in file #{}'.format(ex2plot[poi], session, audio_filename[ex2plot[poi]]))
                 # When no figure is specified the current figure is saved
                 pdf_spectrogram.savefig()
                 plt.close()
 
+            # Save all .wav files to train classifiers in the future:
+            for poi in range(len(pois)):
+                signal = pois[poi]
+
                 # Save .wav file of snippet
                 sf.write(str(session) + '_' +'POI' + str(poi) + '.wav', signal, sr)
-
 
             print('Saved figures to PDF')
             pdf_wave.close()
             pdf_spectrogram.close()
+            
+            if bird[0] == 'z': 
+                print('Successfully extraced and saved .wav files. Deleting the following raw data path: ', path)
+                shutil.rmtree(path) # Remove raw data to avoid cluttering the harddrive
 
         else: print('Bird {} session {} is empty or has already been segmented'.format(bird, session))
 
             
     except ValueError:
         print('There was an unexpected error investigating (potentially) bird {} session {}.'.format(bird, session))
+
+print('DONE PARSING!')
