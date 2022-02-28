@@ -61,7 +61,7 @@ for x in os.walk(path_load):
         # if the bird is starling, announce it and raise value error to get to the next part of the loop
         # it technically is a value error, since it is a wrong bird
 
-        if bird.split('_') == 's':
+        if bird.split('_')[0] == 's':
             print('Bird is starling, will just skip it')
             raise ValueError
 
